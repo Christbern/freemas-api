@@ -11,7 +11,7 @@ class ClientController
      */
     public function index()
     {
-        //
+        return 
     }
 
     /**

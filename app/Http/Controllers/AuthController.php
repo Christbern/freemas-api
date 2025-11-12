@@ -12,6 +12,7 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string',
+            'login' => 'nullable|string',
             'phone' => 'required|phone|unique:users,phone',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
@@ -22,7 +23,7 @@ class AuthController extends Controller
         $validated['password'] = Hash::make($validated['password']);
         $user = User::create($validated);
 
-        $token = $user->createToken('api_token')->plainTextToken;
+        $token = $user->createToken('freemas_api_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
@@ -33,7 +34,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email',
+            'phone' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -43,7 +44,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $token = $user->createToken('api_token')->plainTextToken;
+        $token = $user->createToken('freemas_api_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
@@ -57,8 +58,4 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
-    public function me(Request $request)
-    {
-        return response()->json($request->user()->load('employee'));
-    }
 }

@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('attendances', AttendanceController::class)->except(['update']);
     Route::get('payroll-sheets', [PayrollSheetController::class, 'index']);
-    Route::post('payroll-sheets/generate', [PayrollSheetController::class, 'generate']);
+    Route::post('payroll-sheets/generate', [PayrollSheetController::class, 'generate'])->middleware(['role:admin,manager']);
     Route::get('payroll-sheets/{payrollSheet}', [PayrollSheetController::class, 'show']);
+
 });
