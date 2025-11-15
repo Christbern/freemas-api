@@ -16,7 +16,6 @@ class Employee extends Model
         'email',
         'phone',
         'hire_date',
-        'status',
     ];
 
     public function qualification()

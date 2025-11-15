@@ -3,50 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    protected UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
-            'login' => 'nullable|string',
-            'phone' => 'required|phone|unique:users,phone',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|unique:users,phone',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'in:admin,manager,employee',
-            'employee_id' => 'nullable|exists:employees,id',
         ]);
 
+        if (!$request->email && !$request->phone) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email or phone number is required',
+            ]);
+        }
         $validated['password'] = Hash::make($validated['password']);
-        $user = User::create($validated);
+        $user = $this->userRepository->store($validated);
 
         $token = $user->createToken('freemas_api_token')->plainTextToken;
 
         return response()->json([
+            'success' => true,
             'user' => $user,
-            'token' => $token
-        ], 201);
+            'token' => $token,
+            'message' => 'Account created successfully.',
+        ]);
     }
 
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
+            'identifier' => 'required|string',
             'password' => 'required|string',
         ]);
-
-        $user = User::where('email', $validated['email'])->first();
+        $identifier = $validated['identifier'];
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $user = $this->userRepository->getByEmail($identifier);
+        } else {
+            $user = $this->userRepository->getByPhoneNumber($identifier);
+        }
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['success' => false, 'message' => 'Invalid credentials']);
         }
 
         $token = $user->createToken('freemas_api_token')->plainTextToken;
 
         return response()->json([
+            'success' => true,
             'user' => $user,
             'token' => $token
         ]);
@@ -55,7 +73,23 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully'
+        ]);
     }
 
+    public function refresh(Request $request)
+    {
+        $user = $request->user();
+
+        $user->currentAccessToken()->delete();
+
+        $newToken = $user->createToken('freemas_api_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Token refreshed.',
+            'token' => $newToken,
+        ]);
+    }
 }

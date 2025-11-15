@@ -10,19 +10,11 @@ abstract class ResourceRepository {
     }
 
     public function store($inputs) {
-        return $this->model->store($inputs);
+        return $this->model->create($inputs);
     }
 
     public function getById($id) {
         return $this->model->where('id', $id)->first();
-    }
-
-    public function getByEmail($email) {
-        return $this->model->where('email', $email)->first();
-    }
-
-    public function getByPhoneNumber($phone) {
-        return $this->model->where('phone', $phone)->first();
     }
 
     public function update($id, $inputs) {
