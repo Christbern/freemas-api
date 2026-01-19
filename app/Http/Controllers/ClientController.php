@@ -20,7 +20,8 @@ class ClientController
      */
     public function index()
     {
-        return $this->clientRepository->getAll();
+        $clients = $this->clientRepository->getAll();
+        return response()->json(['success' => true, 'clients' => $clients]);
     }
 
     /**

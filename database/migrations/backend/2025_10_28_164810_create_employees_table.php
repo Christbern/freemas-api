@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->string('profile_photo_path')->nullable();
             $table->date('hire_date')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', [0, 1])->default(1);
             $table->timestamps();
         });
     }

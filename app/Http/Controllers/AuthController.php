@@ -88,6 +88,7 @@ class AuthController extends Controller
         $newToken = $user->createToken('freemas_api_token')->plainTextToken;
 
         return response()->json([
+            'success' => true,
             'message' => 'Token refreshed.',
             'token' => $newToken,
         ]);

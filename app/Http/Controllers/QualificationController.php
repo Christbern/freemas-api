@@ -20,7 +20,9 @@ class QualificationController
      */
     public function index()
     {
-        return $this->qualificationRepository->getAll();
+        $qualifications = $this->qualificationRepository->getAll();
+        return response()->json(['success' => true, 'qualifications' => $qualifications]);
+
     }
 
     /**

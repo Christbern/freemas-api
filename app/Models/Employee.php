@@ -33,9 +33,4 @@ class Employee extends Model
         return $this->hasMany(PayrollSheet::class);
     }
 
-    // Full name helper
-    public function getFullNameAttribute(): string
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
 }

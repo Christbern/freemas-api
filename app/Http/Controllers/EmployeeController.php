@@ -3,45 +3,47 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Repositories\EmployeeRepository;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
+
+    protected EmployeeRepository $employeeRepository;
+
+    public function __construct(EmployeeRepository $employeeRepository)
+    {
+        $this->employeeRepository = $employeeRepository;
+    }
+
     public function index()
     {
-        return Employee::with('qualification')->get();
+        $employees = $this->employeeRepository->getAll();
+        return response()->json(['success' => true, 'employees' => $employees]);
+
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'qualification_id' => 'required|exists:qualifications,id',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'email' => 'nullable|email|unique:employees,email',
-            'phone' => 'nullable|string',
-            'hire_date' => 'nullable|date',
-            'status' => 'in:active,inactive',
-        ]);
-
-        return Employee::create($validated);
+        $employee = $this->employeeRepository->store($request->validated());
+        return response()->json(['success' => true, 'employee' => $employee]);
     }
 
     public function show($id)
     {
-        return Employee::with('qualification')->findOrFail($id);
+        $employee = $this->employeeRepository->getById($id);
+        return response()->json(['success' => true, 'employee' => $employee]);
     }
 
     public function update(Request $request, $id)
     {
-        $employee = Employee::findOrFail($id);
-        $employee->update($request->all());
-        return $employee;
+        $this->employeeRepository->update($id, $request->validated());
+        return response()->json(['success' => true, 'message' => 'Employee updated successfully.']);
     }
 
     public function destroy($id)
     {
-        Employee::findOrFail($id)->delete();
-        return response()->noContent();
+        $this->employeeRepository->destroy($id);
+        return response()->json(['success' => true, 'message' => 'Employee deleted successfully.']);
     }
 }

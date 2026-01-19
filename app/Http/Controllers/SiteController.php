@@ -19,7 +19,9 @@ class SiteController
      */
     public function index()
     {
-        return $this->siteRepository->getAll();
+        $sites = $this->siteRepository->getAll();
+        return response()->json(['success' => true, 'sites' => $sites]);
+
     }
 
     /**

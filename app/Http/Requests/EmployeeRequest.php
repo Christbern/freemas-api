@@ -25,10 +25,11 @@ class EmployeeRequest extends FormRequest
             'qualification_id' => 'required|exists:qualifications,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'sometimes|nullable|email|unique:employess,id',
-            'phone' => 'required|nullable|string|max:20',
+            'email' => 'sometimes|nullable|email|unique:employess,email',
+            'phone' => 'sometimes|nullable|string|max:20',
             'address' => 'sometimes|nullable|string|max:255',
             'hire_date' => 'required|date',
+            'status' => 'required|in:0,1',
         ];
     }
 }

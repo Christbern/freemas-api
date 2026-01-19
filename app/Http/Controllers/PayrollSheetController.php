@@ -4,30 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\PayrollSheet;
 use App\Models\Attendance;
+use App\Repositories\PayrollSheetRepository;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class PayrollSheetController extends Controller
 {
+
+    protected PayrollSheetRepository $payrollSheetRepository;
+
     /**
      * Generate or get payroll sheet for a given month.
      */
     public function generate(Request $request)
     {
-        $validated = $request->validate([
-            'month' => 'required|date_format:Y-m', // e.g. "2025-10"
-        ]);
-
-        $month = Carbon::createFromFormat('Y-m', $validated['month']);
-        $startOfMonth = $month->copy()->startOfMonth();
-        $endOfMonth = $month->copy()->endOfMonth();
-
-        // Group attendances by employee and site
-        $attendances = Attendance::with('employee.qualification')
-            ->whereBetween('work_date', [$startOfMonth, $endOfMonth])
-            ->where('present', true)
-            ->get()
-            ->groupBy(fn ($a) => $a->employee_id . '-' . $a->site_id);
+    
+        $month = Carbon::createFromFormat('Y-m', $request->validated['month']);
+        $attendances = $this->payrollSheetRepository->getByEmployeeAndSite($month);
 
         $results = [];
 
@@ -61,11 +54,13 @@ class PayrollSheetController extends Controller
 
     public function index()
     {
-        return PayrollSheet::with(['employee.qualification', 'site.client'])->latest()->get();
+        $attendances = $this->payrollSheetRepository->getLatest();
+        return response()->json(['success' => true, 'attendances' => $attendances]);
     }
 
     public function show($id)
     {
-        return PayrollSheet::with(['employee', 'site'])->findOrFail($id);
+        $attendance = $this->payrollSheetRepository->getById($id);
+        return response()->json(['success' => true, 'attendance' => $attendance]);
     }
 }
